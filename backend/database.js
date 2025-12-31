@@ -12,10 +12,21 @@ function initDatabase() {
       CREATE TABLE IF NOT EXISTS roommates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        email TEXT,
         is_active BOOLEAN DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add email column to existing roommates table if it doesn't exist
+    db.run(`
+      ALTER TABLE roommates ADD COLUMN email TEXT
+    `, (err) => {
+      // Ignore error if column already exists
+      if (err && !err.message.includes('duplicate column')) {
+        console.error('Error adding email column:', err);
+      }
+    });
 
     // Create bills table
     db.run(`

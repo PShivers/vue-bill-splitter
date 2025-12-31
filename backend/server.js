@@ -23,18 +23,18 @@ app.get('/api/roommates', (req, res) => {
 });
 
 app.post('/api/roommates', (req, res) => {
-  const { name } = req.body;
-  
+  const { name, email } = req.body;
+
   if (!name || name.trim().length === 0) {
     return res.status(400).json({ error: 'Name is required' });
   }
 
-  db.run('INSERT INTO roommates (name) VALUES (?)', [name.trim()], function(err) {
+  db.run('INSERT INTO roommates (name, email) VALUES (?, ?)', [name.trim(), email || null], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-    res.json({ id: this.lastID, name: name.trim(), is_active: 1 });
+    res.json({ id: this.lastID, name: name.trim(), email: email || null, is_active: 1 });
   });
 });
 

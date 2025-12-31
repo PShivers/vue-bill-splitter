@@ -1,20 +1,44 @@
 <template>
   <div class="roommate-panel">
-    <!-- Add Roommate Form -->
-    <div class="add-form">
-      <div class="form-group">
-        <label>Roommate Name:</label>
-        <input 
-          type="text" 
-          v-model="newRoommateName" 
-          placeholder="Enter roommate name"
-          maxlength="50"
-          @keyup.enter="addRoommate"
-        />
-      </div>
-      <button @click="addRoommate" class="btn btn-primary">Add Roommate</button>
+    <div class="panel-header">
+      <button @click="showAddForm = true" class="btn btn-primary">Add Roommate</button>
     </div>
-    
+
+    <!-- Add Roommate Modal -->
+    <div v-if="showAddForm" class="modal-overlay" @click="cancelAdd">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Add New Roommate</h3>
+          <button @click="cancelAdd" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Roommate Name:</label>
+            <input
+              type="text"
+              v-model="newRoommateName"
+              placeholder="Enter roommate name"
+              maxlength="50"
+              @keyup.enter="addRoommate"
+            />
+          </div>
+          <div class="form-group">
+            <label>Email (optional):</label>
+            <input
+              type="email"
+              v-model="newRoommateEmail"
+              placeholder="Enter email address"
+              @keyup.enter="addRoommate"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelAdd" class="btn btn-secondary">Cancel</button>
+          <button @click="addRoommate" class="btn btn-success">Add Roommate</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Totals Section -->
     <div class="totals-section">
       <h3>Totals Owed</h3>
@@ -53,7 +77,9 @@ export default {
   },
   emits: ['roommate-added', 'roommate-added-success', 'roommate-added-error', 'roommate-deleted'],
   setup(props, { emit }) {
+    const showAddForm = ref(false)
     const newRoommateName = ref('')
+    const newRoommateEmail = ref('')
 
     const addRoommate = async () => {
       if (!newRoommateName.value.trim()) {
@@ -62,11 +88,14 @@ export default {
       }
 
       const roommateData = {
-        name: newRoommateName.value.trim()
+        name: newRoommateName.value.trim(),
+        email: newRoommateEmail.value.trim() || null
       }
 
-      // Clear input immediately for better UX
+      // Clear inputs immediately for better UX
       newRoommateName.value = ''
+      newRoommateEmail.value = ''
+      showAddForm.value = false
 
       // Emit optimistic update immediately
       emit('roommate-added', roommateData)
@@ -83,6 +112,12 @@ export default {
       }
     }
 
+    const cancelAdd = () => {
+      newRoommateName.value = ''
+      newRoommateEmail.value = ''
+      showAddForm.value = false
+    }
+
     const deleteRoommate = async (roommateId) => {
       if (confirm('Are you sure you want to delete this roommate? This will remove all their bill assignments.')) {
         try {
@@ -96,8 +131,11 @@ export default {
     }
 
     return {
+      showAddForm,
       newRoommateName,
+      newRoommateEmail,
       addRoommate,
+      cancelAdd,
       deleteRoommate
     }
   }
@@ -122,11 +160,73 @@ export default {
   color: #2c3e50;
 }
 
-.add-form {
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 2px solid #eee;
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
 }
 
 .form-group {
@@ -210,6 +310,24 @@ export default {
 
 .btn-primary:hover {
   background: #2980b9;
+}
+
+.btn-success {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #219a52;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #7f8c8d;
 }
 
 .btn-danger {
