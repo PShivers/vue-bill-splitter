@@ -55,7 +55,7 @@ export default {
       required: true
     }
   },
-  emits: ['roommate-added', 'roommate-deleted'],
+  emits: ['roommate-added', 'roommate-added-success', 'roommate-added-error', 'roommate-deleted'],
   setup(props, { emit }) {
     const newRoommateName = ref('')
 
@@ -65,16 +65,25 @@ export default {
         return
       }
 
+      const roommateData = {
+        name: newRoommateName.value.trim()
+      }
+
+      // Clear input immediately for better UX
+      newRoommateName.value = ''
+
+      // Emit optimistic update immediately
+      emit('roommate-added', roommateData)
+
       try {
-        await axios.post(`${API_URL}/roommates`, {
-          name: newRoommateName.value.trim()
-        })
-        
-        newRoommateName.value = ''
-        emit('roommate-added')
+        const response = await axios.post(`${API_URL}/roommates`, roommateData)
+        // Emit success with actual server data
+        emit('roommate-added-success', response.data)
       } catch (error) {
         console.error('Error adding roommate:', error)
         alert('Error adding roommate')
+        // Emit failure to trigger rollback
+        emit('roommate-added-error', roommateData)
       }
     }
 

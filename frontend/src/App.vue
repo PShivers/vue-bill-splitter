@@ -20,11 +20,13 @@
           @assignment-changed="refreshTotals"
         />
         
-        <RoommatePanel 
+        <RoommatePanel
           class="right-panel"
           :roommates="roommates"
           :totals="roommateTotals"
           @roommate-added="handleRoommateAdded"
+          @roommate-added-success="handleRoommateAddedSuccess"
+          @roommate-added-error="handleRoommateAddedError"
           @roommate-deleted="handleRoommateDeleted"
         />
       </div>
@@ -93,9 +95,48 @@ export default {
       refreshTotals()
     }
 
-    const handleRoommateAdded = () => {
-      fetchRoommates()
-      refreshTotals()
+    const handleRoommateAdded = (roommateData) => {
+      // Optimistic update: add roommate immediately with temporary ID
+      const tempId = `temp-${Date.now()}`
+      const optimisticRoommate = {
+        id: tempId,
+        name: roommateData.name,
+        is_active: 1,
+        _isOptimistic: true
+      }
+
+      roommates.value.push(optimisticRoommate)
+
+      // Add to totals with $0.00
+      roommateTotals.value.push({
+        id: tempId,
+        name: roommateData.name,
+        total: 0,
+        _isOptimistic: true
+      })
+    }
+
+    const handleRoommateAddedSuccess = (serverData) => {
+      // Replace optimistic entry with real data from server
+      const optimisticIndex = roommates.value.findIndex(r => r._isOptimistic && r.name === serverData.name)
+      if (optimisticIndex !== -1) {
+        roommates.value[optimisticIndex] = serverData
+      }
+
+      const optimisticTotalIndex = roommateTotals.value.findIndex(r => r._isOptimistic && r.name === serverData.name)
+      if (optimisticTotalIndex !== -1) {
+        roommateTotals.value[optimisticTotalIndex] = {
+          id: serverData.id,
+          name: serverData.name,
+          total: 0
+        }
+      }
+    }
+
+    const handleRoommateAddedError = (roommateData) => {
+      // Rollback: remove optimistic entries on error
+      roommates.value = roommates.value.filter(r => !(r._isOptimistic && r.name === roommateData.name))
+      roommateTotals.value = roommateTotals.value.filter(r => !(r._isOptimistic && r.name === roommateData.name))
     }
 
     const handleRoommateDeleted = () => {
@@ -116,6 +157,8 @@ export default {
       handleBillAdded,
       handleBillDeleted,
       handleRoommateAdded,
+      handleRoommateAddedSuccess,
+      handleRoommateAddedError,
       handleRoommateDeleted,
       refreshTotals
     }
