@@ -2,14 +2,23 @@
   <div class="app" :class="{ 'dark-mode': isDarkMode }">
     <header class="header">
       <h1>Bill Splitter</h1>
-      <button @click="toggleDarkMode" class="dark-mode-toggle" :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
-        {{ isDarkMode ? '☀️' : '🌙' }}
+      <button
+        @click="toggleDarkMode"
+        class="dark-mode-toggle"
+        :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      >
+        <v-icon size="small">{{
+          isDarkMode ? "mdi-white-balance-sunny" : "mdi-moon-waning-crescent"
+        }}</v-icon>
       </button>
     </header>
-    
+
     <main class="main">
       <div class="panels">
-        <div class="collapsible-panel left-panel" :class="{ collapsed: !panelStates.bills }">
+        <div
+          class="collapsible-panel left-panel"
+          :class="{ collapsed: !panelStates.bills }"
+        >
           <div class="panel-header-bar" @click="togglePanel('bills')">
             <h2 :class="{ rotated: !panelStates.bills }">Bills</h2>
           </div>
@@ -22,7 +31,10 @@
           </div>
         </div>
 
-        <div class="collapsible-panel center-panel" :class="{ collapsed: !panelStates.assignments }">
+        <div
+          class="collapsible-panel center-panel"
+          :class="{ collapsed: !panelStates.assignments }"
+        >
           <div class="panel-header-bar" @click="togglePanel('assignments')">
             <h2 :class="{ rotated: !panelStates.assignments }">Assignments</h2>
           </div>
@@ -35,7 +47,10 @@
           </div>
         </div>
 
-        <div class="collapsible-panel right-panel" :class="{ collapsed: !panelStates.roommates }">
+        <div
+          class="collapsible-panel right-panel"
+          :class="{ collapsed: !panelStates.roommates }"
+        >
           <div class="panel-header-bar" @click="togglePanel('roommates')">
             <h2 :class="{ rotated: !panelStates.roommates }">Roommates</h2>
           </div>
@@ -56,137 +71,145 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import BillPanel from './components/BillPanel.vue'
-import RoommatePanel from './components/RoommatePanel.vue'
-import AssignmentPanel from './components/AssignmentPanel.vue'
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import BillPanel from "./components/BillPanel.vue";
+import RoommatePanel from "./components/RoommatePanel.vue";
+import AssignmentPanel from "./components/AssignmentPanel.vue";
 
-const API_URL = 'http://localhost:3001/api'
+const API_URL = "http://localhost:3001/api";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     BillPanel,
     RoommatePanel,
-    AssignmentPanel
+    AssignmentPanel,
   },
   setup() {
-    const bills = ref([])
-    const roommates = ref([])
-    const roommateTotals = ref([])
+    const bills = ref([]);
+    const roommates = ref([]);
+    const roommateTotals = ref([]);
     const panelStates = ref({
       bills: true,
       assignments: true,
-      roommates: true
-    })
+      roommates: true,
+    });
 
     // Dark mode state - load from localStorage
-    const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
+    const isDarkMode = ref(localStorage.getItem("darkMode") === "true");
 
     const togglePanel = (panelName) => {
-      panelStates.value[panelName] = !panelStates.value[panelName]
-    }
+      panelStates.value[panelName] = !panelStates.value[panelName];
+    };
 
     const toggleDarkMode = () => {
-      isDarkMode.value = !isDarkMode.value
-      localStorage.setItem('darkMode', isDarkMode.value.toString())
-    }
+      isDarkMode.value = !isDarkMode.value;
+      localStorage.setItem("darkMode", isDarkMode.value.toString());
+    };
 
     const fetchBills = async () => {
       try {
-        const response = await axios.get(`${API_URL}/bills`)
-        bills.value = response.data
+        const response = await axios.get(`${API_URL}/bills`);
+        bills.value = response.data;
       } catch (error) {
-        console.error('Error fetching bills:', error)
+        console.error("Error fetching bills:", error);
       }
-    }
+    };
 
     const fetchRoommates = async () => {
       try {
-        const response = await axios.get(`${API_URL}/roommates`)
-        roommates.value = response.data
+        const response = await axios.get(`${API_URL}/roommates`);
+        roommates.value = response.data;
       } catch (error) {
-        console.error('Error fetching roommates:', error)
+        console.error("Error fetching roommates:", error);
       }
-    }
+    };
 
     const fetchTotals = async () => {
       try {
-        const response = await axios.get(`${API_URL}/roommates/totals`)
-        roommateTotals.value = response.data
+        const response = await axios.get(`${API_URL}/roommates/totals`);
+        roommateTotals.value = response.data;
       } catch (error) {
-        console.error('Error fetching totals:', error)
+        console.error("Error fetching totals:", error);
       }
-    }
+    };
 
     const refreshTotals = () => {
-      fetchTotals()
-    }
+      fetchTotals();
+    };
 
     const handleBillAdded = () => {
-      fetchBills()
-    }
+      fetchBills();
+    };
 
     const handleBillDeleted = () => {
-      fetchBills()
-      refreshTotals()
-    }
+      fetchBills();
+      refreshTotals();
+    };
 
     const handleRoommateAdded = (roommateData) => {
       // Optimistic update: add roommate immediately with temporary ID
-      const tempId = `temp-${Date.now()}`
+      const tempId = `temp-${Date.now()}`;
       const optimisticRoommate = {
         id: tempId,
         name: roommateData.name,
         is_active: 1,
-        _isOptimistic: true
-      }
+        _isOptimistic: true,
+      };
 
-      roommates.value.push(optimisticRoommate)
+      roommates.value.push(optimisticRoommate);
 
       // Add to totals with $0.00
       roommateTotals.value.push({
         id: tempId,
         name: roommateData.name,
         total: 0,
-        _isOptimistic: true
-      })
-    }
+        _isOptimistic: true,
+      });
+    };
 
     const handleRoommateAddedSuccess = (serverData) => {
       // Replace optimistic entry with real data from server
-      const optimisticIndex = roommates.value.findIndex(r => r._isOptimistic && r.name === serverData.name)
+      const optimisticIndex = roommates.value.findIndex(
+        (r) => r._isOptimistic && r.name === serverData.name
+      );
       if (optimisticIndex !== -1) {
-        roommates.value[optimisticIndex] = serverData
+        roommates.value[optimisticIndex] = serverData;
       }
 
-      const optimisticTotalIndex = roommateTotals.value.findIndex(r => r._isOptimistic && r.name === serverData.name)
+      const optimisticTotalIndex = roommateTotals.value.findIndex(
+        (r) => r._isOptimistic && r.name === serverData.name
+      );
       if (optimisticTotalIndex !== -1) {
         roommateTotals.value[optimisticTotalIndex] = {
           id: serverData.id,
           name: serverData.name,
-          total: 0
-        }
+          total: 0,
+        };
       }
-    }
+    };
 
     const handleRoommateAddedError = (roommateData) => {
       // Rollback: remove optimistic entries on error
-      roommates.value = roommates.value.filter(r => !(r._isOptimistic && r.name === roommateData.name))
-      roommateTotals.value = roommateTotals.value.filter(r => !(r._isOptimistic && r.name === roommateData.name))
-    }
+      roommates.value = roommates.value.filter(
+        (r) => !(r._isOptimistic && r.name === roommateData.name)
+      );
+      roommateTotals.value = roommateTotals.value.filter(
+        (r) => !(r._isOptimistic && r.name === roommateData.name)
+      );
+    };
 
     const handleRoommateDeleted = () => {
-      fetchRoommates()
-      refreshTotals()
-    }
+      fetchRoommates();
+      refreshTotals();
+    };
 
     onMounted(() => {
-      fetchBills()
-      fetchRoommates()
-      fetchTotals()
-    })
+      fetchBills();
+      fetchRoommates();
+      fetchTotals();
+    });
 
     return {
       bills,
@@ -202,10 +225,10 @@ export default {
       handleRoommateAddedSuccess,
       handleRoommateAddedError,
       handleRoommateDeleted,
-      refreshTotals
-    }
-  }
-}
+      refreshTotals,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -226,7 +249,7 @@ export default {
   color: white;
   text-align: center;
   padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -235,7 +258,7 @@ export default {
 
 .dark-mode .header {
   background: #1e1e1e;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header h1 {
@@ -279,7 +302,7 @@ export default {
 .collapsible-panel {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -289,7 +312,7 @@ export default {
 
 .dark-mode .collapsible-panel {
   background: #2a2a2a;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .collapsible-panel.left-panel,
