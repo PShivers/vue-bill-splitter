@@ -41,6 +41,27 @@
               @keyup.enter="addBill"
             />
           </div>
+          <div class="form-group">
+            <label>Assign to Roommates:</label>
+            <div class="roommate-list">
+              <div
+                v-for="roommate in roommates"
+                :key="roommate.id"
+                class="roommate-item"
+                @click="toggleRoommate(roommate.id)"
+              >
+                <input
+                  type="checkbox"
+                  :checked="assignedRoommates.includes(roommate.id)"
+                  @click.stop="toggleRoommate(roommate.id)"
+                />
+                <span>{{ roommate.name }}</span>
+              </div>
+              <div v-if="roommates.length === 0" class="no-roommates">
+                No roommates available. Add roommates first.
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button @click="cancelAdd" class="btn btn-secondary">Cancel</button>
@@ -79,6 +100,10 @@ export default {
     bills: {
       type: Array,
       required: true
+    },
+    roommates: {
+      type: Array,
+      required: true
     }
   },
   emits: ['bill-added', 'bill-deleted', 'bill-clicked'],
@@ -89,6 +114,16 @@ export default {
       amount: '',
       due_date: ''
     })
+    const assignedRoommates = ref([])
+
+    const toggleRoommate = (roommateId) => {
+      const index = assignedRoommates.value.indexOf(roommateId)
+      if (index > -1) {
+        assignedRoommates.value.splice(index, 1)
+      } else {
+        assignedRoommates.value.push(roommateId)
+      }
+    }
 
     const addBill = async () => {
       if (!newBill.name.trim() || !newBill.amount || parseFloat(newBill.amount) <= 0) {
@@ -97,15 +132,23 @@ export default {
       }
 
       try {
-        await axios.post(`${API_URL}/bills`, {
+        // Create the bill first
+        const response = await axios.post(`${API_URL}/bills`, {
           name: newBill.name.trim(),
           amount: parseFloat(newBill.amount),
           due_date: newBill.due_date || null
         })
-        
+
+        // Assign roommates to the new bill
+        const billId = response.data.id
+        for (const roommateId of assignedRoommates.value) {
+          await axios.post(`${API_URL}/bills/${billId}/assign/${roommateId}`)
+        }
+
         newBill.name = ''
         newBill.amount = ''
         newBill.due_date = ''
+        assignedRoommates.value = []
         showAddForm.value = false
         emit('bill-added')
       } catch (error) {
@@ -118,6 +161,7 @@ export default {
       newBill.name = ''
       newBill.amount = ''
       newBill.due_date = ''
+      assignedRoommates.value = []
       showAddForm.value = false
     }
 
@@ -130,6 +174,8 @@ export default {
     return {
       showAddForm,
       newBill,
+      assignedRoommates,
+      toggleRoommate,
       addBill,
       cancelAdd,
       formatDate
@@ -348,5 +394,50 @@ export default {
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 12px;
+}
+
+.roommate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.roommate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.roommate-item:hover {
+  border-color: #3498db;
+  background: #f0f8ff;
+}
+
+.roommate-item input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.roommate-item span {
+  flex: 1;
+  color: #2c3e50;
+}
+
+.no-roommates {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 1rem;
 }
 </style>

@@ -25,6 +25,7 @@
           <div v-show="panelStates.bills" class="panel-content">
             <BillPanel
               :bills="bills"
+              :roommates="roommates"
               @bill-added="handleBillAdded"
               @bill-deleted="handleBillDeleted"
               @bill-clicked="handleBillClicked"
@@ -69,6 +70,7 @@
     <EditBillModal
       :show="showEditBillModal"
       :bill="selectedBill"
+      :roommates="roommates"
       @close="closeEditModal"
       @bill-updated="handleBillUpdated"
       @bill-deleted="handleBillDeletedFromModal"
