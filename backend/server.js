@@ -87,9 +87,36 @@ app.post('/api/bills', (req, res) => {
   );
 });
 
+app.put('/api/bills/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, amount, due_date } = req.body;
+
+  if (!name || !amount || amount <= 0) {
+    return res.status(400).json({ error: 'Name and valid amount are required' });
+  }
+
+  db.run(
+    'UPDATE bills SET name = ?, amount = ?, due_date = ? WHERE id = ? AND is_active = 1',
+    [name.trim(), parseFloat(amount), due_date || null, id],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({
+        id: parseInt(id),
+        name: name.trim(),
+        amount: parseFloat(amount),
+        due_date: due_date || null,
+        is_active: 1
+      });
+    }
+  );
+});
+
 app.delete('/api/bills/:id', (req, res) => {
   const { id } = req.params;
-  
+
   db.run('UPDATE bills SET is_active = 0 WHERE id = ?', [id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });

@@ -30,6 +30,7 @@
             :key="bill.id"
             class="bill-item"
             :title="`${bill.name}: $${bill.amount.toFixed(2)}`"
+            @click="$emit('bill-clicked', bill)"
           >
             <v-icon size="x-small">mdi-receipt</v-icon>
             <span class="bill-name">{{ bill.name }}</span>
@@ -42,7 +43,7 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 export default {
   name: 'CalendarPanel',
@@ -52,6 +53,7 @@ export default {
       required: true
     }
   },
+  emits: ['bill-clicked'],
   setup(props) {
     const currentDate = ref(new Date())
     const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -291,11 +293,21 @@ export default {
   border-radius: 4px;
   font-size: 0.75rem;
   color: #2c3e50;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bill-item:hover {
+  background: #bbdefb;
 }
 
 .dark-mode .bill-item {
   background: #1e3a5f;
   color: #e0e0e0;
+}
+
+.dark-mode .bill-item:hover {
+  background: #2a4a7f;
 }
 
 .bill-name {
