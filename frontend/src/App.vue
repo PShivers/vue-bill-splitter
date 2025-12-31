@@ -1,7 +1,10 @@
 <template>
-  <div class="app">
+  <div class="app" :class="{ 'dark-mode': isDarkMode }">
     <header class="header">
       <h1>Bill Splitter</h1>
+      <button @click="toggleDarkMode" class="dark-mode-toggle" :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
     </header>
     
     <main class="main">
@@ -78,8 +81,16 @@ export default {
       roommates: true
     })
 
+    // Dark mode state - load from localStorage
+    const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
+
     const togglePanel = (panelName) => {
       panelStates.value[panelName] = !panelStates.value[panelName]
+    }
+
+    const toggleDarkMode = () => {
+      isDarkMode.value = !isDarkMode.value
+      localStorage.setItem('darkMode', isDarkMode.value.toString())
     }
 
     const fetchBills = async () => {
@@ -182,7 +193,9 @@ export default {
       roommates,
       roommateTotals,
       panelStates,
+      isDarkMode,
       togglePanel,
+      toggleDarkMode,
       handleBillAdded,
       handleBillDeleted,
       handleRoommateAdded,
@@ -200,6 +213,12 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f5f5f5;
+  transition: background-color 0.3s ease;
+}
+
+.app.dark-mode {
+  background: #1a1a1a;
 }
 
 .header {
@@ -208,11 +227,42 @@ export default {
   text-align: center;
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.dark-mode .header {
+  background: #1e1e1e;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .header h1 {
   margin: 0;
   font-size: 2rem;
+}
+
+.dark-mode-toggle {
+  position: absolute;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .main {
@@ -234,7 +284,12 @@ export default {
   flex-direction: column;
   overflow: hidden;
   flex: 1;
-  transition: flex 0.3s ease;
+  transition: flex 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark-mode .collapsible-panel {
+  background: #2a2a2a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .collapsible-panel.left-panel,
@@ -262,6 +317,12 @@ export default {
   user-select: none;
   min-height: 60px;
   flex: 0 0 auto;
+  transition: background-color 0.3s ease;
+}
+
+.dark-mode .panel-header-bar {
+  background: #333;
+  border-bottom: 2px solid #444;
 }
 
 .collapsible-panel.collapsed .panel-header-bar {
@@ -273,11 +334,20 @@ export default {
   background: #e9ecef;
 }
 
+.dark-mode .panel-header-bar:hover {
+  background: #3a3a3a;
+}
+
 .panel-header-bar h2 {
   margin: 0;
   font-size: 1.5rem;
   color: #2c3e50;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .panel-header-bar h2 {
+  color: #e0e0e0;
 }
 
 .panel-header-bar h2.rotated {
