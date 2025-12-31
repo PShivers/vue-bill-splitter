@@ -35,6 +35,27 @@
             @keyup.enter="saveBill"
           />
         </div>
+        <div class="form-group">
+          <label>Assign to Roommates:</label>
+          <div class="roommate-list">
+            <div
+              v-for="roommate in roommates"
+              :key="roommate.id"
+              class="roommate-item"
+              @click="toggleRoommate(roommate.id)"
+            >
+              <input
+                type="checkbox"
+                :checked="assignedRoommates.includes(roommate.id)"
+                @click.stop="toggleRoommate(roommate.id)"
+              />
+              <span>{{ roommate.name }}</span>
+            </div>
+            <div v-if="roommates.length === 0" class="no-roommates">
+              No roommates available. Add roommates first.
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button @click="confirmDelete" class="btn btn-danger">
@@ -65,6 +86,10 @@ export default {
     bill: {
       type: Object,
       default: null
+    },
+    roommates: {
+      type: Array,
+      required: true
     }
   },
   emits: ['close', 'bill-updated', 'bill-deleted'],
@@ -74,6 +99,17 @@ export default {
       amount: '',
       due_date: ''
     })
+    const assignedRoommates = ref([])
+
+    const loadAssignments = async (billId) => {
+      try {
+        const response = await axios.get(`${API_URL}/bills/${billId}/assignments`)
+        assignedRoommates.value = response.data.map(a => a.roommate_id)
+      } catch (error) {
+        console.error('Error loading assignments:', error)
+        assignedRoommates.value = []
+      }
+    }
 
     watch(() => props.bill, (newBill) => {
       if (newBill) {
@@ -82,8 +118,18 @@ export default {
           amount: newBill.amount,
           due_date: newBill.due_date || ''
         }
+        loadAssignments(newBill.id)
       }
     }, { immediate: true })
+
+    const toggleRoommate = (roommateId) => {
+      const index = assignedRoommates.value.indexOf(roommateId)
+      if (index > -1) {
+        assignedRoommates.value.splice(index, 1)
+      } else {
+        assignedRoommates.value.push(roommateId)
+      }
+    }
 
     const saveBill = async () => {
       if (!editedBill.value.name.trim() || !editedBill.value.amount || parseFloat(editedBill.value.amount) <= 0) {
@@ -92,11 +138,30 @@ export default {
       }
 
       try {
+        // Update bill details
         await axios.put(`${API_URL}/bills/${props.bill.id}`, {
           name: editedBill.value.name.trim(),
           amount: parseFloat(editedBill.value.amount),
           due_date: editedBill.value.due_date || null
         })
+
+        // Update assignments
+        const currentAssignments = await axios.get(`${API_URL}/bills/${props.bill.id}/assignments`)
+        const currentIds = currentAssignments.data.map(a => a.roommate_id)
+
+        // Remove unassigned roommates
+        for (const roommateId of currentIds) {
+          if (!assignedRoommates.value.includes(roommateId)) {
+            await axios.delete(`${API_URL}/bills/${props.bill.id}/assign/${roommateId}`)
+          }
+        }
+
+        // Add newly assigned roommates
+        for (const roommateId of assignedRoommates.value) {
+          if (!currentIds.includes(roommateId)) {
+            await axios.post(`${API_URL}/bills/${props.bill.id}/assign/${roommateId}`)
+          }
+        }
 
         emit('bill-updated')
         emit('close')
@@ -121,6 +186,8 @@ export default {
 
     return {
       editedBill,
+      assignedRoommates,
+      toggleRoommate,
       saveBill,
       confirmDelete
     }
@@ -290,5 +357,68 @@ export default {
 
 .btn-danger:hover {
   background: #c0392b;
+}
+
+.roommate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.dark-mode .roommate-list {
+  background: #1a1a1a;
+}
+
+.roommate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.roommate-item:hover {
+  border-color: #3498db;
+  background: #f0f8ff;
+}
+
+.dark-mode .roommate-item {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dark-mode .roommate-item:hover {
+  border-color: #3498db;
+  background: #1e3a5f;
+}
+
+.roommate-item input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.roommate-item span {
+  flex: 1;
+  color: #2c3e50;
+}
+
+.dark-mode .roommate-item span {
+  color: #e0e0e0;
+}
+
+.no-roommates {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 1rem;
 }
 </style>
