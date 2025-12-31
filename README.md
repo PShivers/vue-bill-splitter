@@ -1,14 +1,33 @@
 # Vue Bill Splitter
 
-A modern web application for splitting bills among roommates, built with Vue.js frontend and Node.js/Express backend with SQLite database.
+A modern, feature-rich web application for splitting bills among roommates, built with Vue.js 3, Vuetify, and Node.js/Express backend with SQLite database.
 
 ## Features
 
-- **Roommate Management**: Add and manage roommates
-- **Bill Management**: Create bills with names, amounts, and due dates
-- **Bill Assignment**: Assign bills to specific roommates
-- **Automatic Calculations**: View how much each roommate owes
-- **Responsive Design**: Works on desktop and mobile devices
+### Core Functionality
+
+- **Roommate Management**: Add and manage roommates with email addresses
+- **Bill Management**: Create and edit bills with names, amounts, and due dates
+- **Bill Assignment**: Assign bills to multiple roommates with checkbox selection
+- **Automatic Calculations**: Real-time calculation of how much each roommate owes
+- **Calendar View**: Visual calendar displaying bills on their due dates
+
+### User Interface
+
+- **Dark Mode**: Toggle between light and dark themes (persists in localStorage)
+- **Collapsible Panels**: Three-panel layout (Bills, Calendar, Roommates) with expand/collapse functionality
+- **Modal Dialogs**: Clean modal interfaces for adding/editing bills and roommates
+- **Click-to-Edit**: Click any bill to open edit modal with inline roommate assignment
+- **Material Design Icons**: Using MDI icons throughout the interface
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Smooth Animations**: Polished transitions and hover effects
+
+### Advanced Features
+
+- **Optimistic UI Updates**: Instant feedback when adding roommates
+- **Soft Deletes**: Bills and roommates are deactivated, not permanently deleted
+- **Bill Splitting**: Automatic equal split calculation among assigned roommates
+- **Visual Calendar**: Month navigation with bills displayed on due dates
 
 ## Project Structure
 
@@ -33,6 +52,7 @@ vue-bill-splitter/
 
 1. Clone or download the project
 2. Install dependencies:
+
    ```bash
    cd vue-bill-splitter
    npm run install:all
@@ -41,12 +61,15 @@ vue-bill-splitter/
 ## Running the Application
 
 ### Development Mode
+
 ```bash
 npm run dev
 ```
+
 This starts both backend (port 3001) and frontend (port 3000) concurrently.
 
 ### Production Mode
+
 ```bash
 # Build frontend
 npm run build
@@ -58,48 +81,59 @@ npm start
 ## API Endpoints
 
 ### Roommates
+
 - `GET /api/roommates` - Get all active roommates
-- `POST /api/roommates` - Add new roommate
+- `POST /api/roommates` - Add new roommate (body: `{ name, email }`)
 - `DELETE /api/roommates/:id` - Deactivate roommate
 
 ### Bills
+
 - `GET /api/bills` - Get all active bills
-- `POST /api/bills` - Add new bill
+- `POST /api/bills` - Add new bill (body: `{ name, amount, due_date }`)
+- `PUT /api/bills/:id` - Update bill (body: `{ name, amount, due_date }`)
 - `DELETE /api/bills/:id` - Deactivate bill
 
 ### Assignments
+
 - `GET /api/bills/:billId/assignments` - Get bill assignments
 - `POST /api/bills/:billId/assign/:roommateId` - Assign bill to roommate
 - `DELETE /api/bills/:billId/assign/:roommateId` - Remove assignment
 
 ### Totals
+
 - `GET /api/roommates/totals` - Get all roommate totals
 - `GET /api/roommates/:id/total` - Get specific roommate total
 
 ## Usage
 
-1. **Add Roommates**: Use the right panel to add roommates
-2. **Add Bills**: Use the left panel to create bills with amounts and due dates
-3. **Assign Bills**: Use the center panel to assign bills to roommates
-4. **View Totals**: See calculated totals for each roommate in the right panel
+1. **Add Roommates**: Click "Add Roommate" in the right panel to add roommates with names and optional email addresses
+2. **Add Bills**: Click "Add Bill" in the left panel to create bills with amounts, due dates, and assign to roommates
+3. **View Calendar**: The center panel shows a monthly calendar with bills displayed on their due dates
+4. **Edit Bills**: Click any bill (in list or calendar) to edit details, change assignments, or delete
+5. **View Totals**: See calculated totals for each roommate in the right panel (bills are split equally among assigned roommates)
+6. **Toggle Dark Mode**: Click the moon/sun icon in the header to switch themes
 
 ## Database Schema
 
 ### Roommates Table
+
 - `id` - Primary key
 - `name` - Roommate name
-- `is_active` - Soft delete flag
+- `email` - Email address (optional)
+- `is_active` - Soft delete flag (1 = active, 0 = deleted)
 - `created_at` - Creation timestamp
 
 ### Bills Table
+
 - `id` - Primary key
 - `name` - Bill name
 - `amount` - Bill amount (decimal)
-- `due_date` - Due date (optional)
-- `is_active` - Soft delete flag
+- `due_date` - Due date (optional, YYYY-MM-DD format)
+- `is_active` - Soft delete flag (1 = active, 0 = deleted)
 - `created_at` - Creation timestamp
 
 ### Bill Assignments Table
+
 - `id` - Primary key
 - `bill_id` - Foreign key to bills
 - `roommate_id` - Foreign key to roommates
@@ -107,7 +141,41 @@ npm start
 
 ## Technology Stack
 
-- **Frontend**: Vue.js 3, Vite, Axios
+- **Frontend**: Vue.js 3, Vuetify 3.11.6, Vite, Axios
 - **Backend**: Node.js, Express.js
 - **Database**: SQLite3
-- **Styling**: CSS3 with responsive design
+- **Icons**: Material Design Icons (@mdi/font)
+- **Styling**: Scoped CSS with dark mode support
+
+## Components
+
+### Frontend Components
+
+- **App.vue** - Main application with three-panel layout and dark mode
+- **BillPanel.vue** - Bill list and add bill modal with roommate assignment
+- **CalendarPanel.vue** - Monthly calendar view with bill display
+- **RoommatePanel.vue** - Roommate management with totals display
+- **EditBillModal.vue** - Modal for editing bills and managing assignments
+
+### Backend Structure
+
+- **server.js** - Express server with REST API endpoints
+- **database.js** - SQLite database initialization and schema
+
+## Key Features Explained
+
+### Bill Splitting Logic
+
+Bills are split equally among all assigned roommates. For example:
+
+- Bill amount: $120
+- Assigned to: Alice, Bob, Charlie
+- Each owes: $40 ($120 ÷ 3)
+
+### Soft Deletes
+
+Bills and roommates are never permanently deleted from the database. Instead, they're marked as inactive (`is_active = 0`) to maintain data integrity and calculation history.
+
+### Dark Mode
+
+Theme preference is stored in `localStorage` and persists across sessions. All components support both light and dark themes with appropriate color schemes.
