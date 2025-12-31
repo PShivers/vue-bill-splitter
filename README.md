@@ -1,14 +1,30 @@
 # Vue Bill Splitter
 
-A modern web application for splitting bills among roommates, built with Vue.js frontend and Node.js/Express backend with SQLite database.
+A modern, feature-rich web application for splitting bills among roommates, built with Vue.js 3, Vuetify, and Node.js/Express backend with SQLite database.
 
 ## Features
 
-- **Roommate Management**: Add and manage roommates
-- **Bill Management**: Create bills with names, amounts, and due dates
-- **Bill Assignment**: Assign bills to specific roommates
-- **Automatic Calculations**: View how much each roommate owes
-- **Responsive Design**: Works on desktop and mobile devices
+### Core Functionality
+- **Roommate Management**: Add and manage roommates with email addresses
+- **Bill Management**: Create and edit bills with names, amounts, and due dates
+- **Bill Assignment**: Assign bills to multiple roommates with checkbox selection
+- **Automatic Calculations**: Real-time calculation of how much each roommate owes
+- **Calendar View**: Visual calendar displaying bills on their due dates
+
+### User Interface
+- **Dark Mode**: Toggle between light and dark themes (persists in localStorage)
+- **Collapsible Panels**: Three-panel layout (Bills, Calendar, Roommates) with expand/collapse functionality
+- **Modal Dialogs**: Clean modal interfaces for adding/editing bills and roommates
+- **Click-to-Edit**: Click any bill to open edit modal with inline roommate assignment
+- **Material Design Icons**: Using MDI icons throughout the interface
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Smooth Animations**: Polished transitions and hover effects
+
+### Advanced Features
+- **Optimistic UI Updates**: Instant feedback when adding roommates
+- **Soft Deletes**: Bills and roommates are deactivated, not permanently deleted
+- **Bill Splitting**: Automatic equal split calculation among assigned roommates
+- **Visual Calendar**: Month navigation with bills displayed on due dates
 
 ## Project Structure
 
