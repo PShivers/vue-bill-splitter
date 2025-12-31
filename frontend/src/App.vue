@@ -233,8 +233,8 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
   flex: 1;
+  transition: flex 0.3s ease;
 }
 
 .collapsible-panel.left-panel,
@@ -261,6 +261,12 @@ export default {
   cursor: pointer;
   user-select: none;
   min-height: 60px;
+  flex: 0 0 auto;
+}
+
+.collapsible-panel.collapsed .panel-header-bar {
+  flex: 1;
+  border-bottom: none;
 }
 
 .panel-header-bar:hover {
@@ -271,14 +277,12 @@ export default {
   margin: 0;
   font-size: 1.5rem;
   color: #2c3e50;
-  transition: transform 0.3s ease;
   white-space: nowrap;
 }
 
 .panel-header-bar h2.rotated {
-  transform: rotate(90deg);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  transform: rotate(-90deg);
+  transform-origin: center;
 }
 
 .panel-content {
