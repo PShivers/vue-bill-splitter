@@ -243,7 +243,7 @@ export default {
 }
 
 .collapsible-panel.center-panel {
-  flex: 0 0 50%;
+  flex: 1;
 }
 
 .collapsible-panel.collapsed {
