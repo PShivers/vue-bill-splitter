@@ -27,6 +27,7 @@
               :bills="bills"
               @bill-added="handleBillAdded"
               @bill-deleted="handleBillDeleted"
+              @bill-clicked="handleBillClicked"
             />
           </div>
         </div>
@@ -39,7 +40,7 @@
             <h2 :class="{ rotated: !panelStates.calendar }">Calendar</h2>
           </div>
           <div v-show="panelStates.calendar" class="panel-content">
-            <CalendarPanel :bills="bills" />
+            <CalendarPanel :bills="bills" @bill-clicked="handleBillClicked" />
           </div>
         </div>
 
@@ -63,6 +64,15 @@
         </div>
       </div>
     </main>
+
+    <!-- Edit Bill Modal -->
+    <EditBillModal
+      :show="showEditBillModal"
+      :bill="selectedBill"
+      @close="closeEditModal"
+      @bill-updated="handleBillUpdated"
+      @bill-deleted="handleBillDeletedFromModal"
+    />
   </div>
 </template>
 
@@ -72,6 +82,7 @@ import axios from "axios";
 import BillPanel from "./components/BillPanel.vue";
 import RoommatePanel from "./components/RoommatePanel.vue";
 import CalendarPanel from "./components/CalendarPanel.vue";
+import EditBillModal from "./components/EditBillModal.vue";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -81,6 +92,7 @@ export default {
     BillPanel,
     RoommatePanel,
     CalendarPanel,
+    EditBillModal,
   },
   setup() {
     const bills = ref([]);
@@ -94,6 +106,10 @@ export default {
 
     // Dark mode state - load from localStorage
     const isDarkMode = ref(localStorage.getItem("darkMode") === "true");
+
+    // Edit bill modal state
+    const showEditBillModal = ref(false);
+    const selectedBill = ref(null);
 
     const togglePanel = (panelName) => {
       panelStates.value[panelName] = !panelStates.value[panelName];
@@ -201,6 +217,26 @@ export default {
       refreshTotals();
     };
 
+    const handleBillClicked = (bill) => {
+      selectedBill.value = bill;
+      showEditBillModal.value = true;
+    };
+
+    const handleBillUpdated = () => {
+      fetchBills();
+      refreshTotals();
+    };
+
+    const handleBillDeletedFromModal = () => {
+      fetchBills();
+      refreshTotals();
+    };
+
+    const closeEditModal = () => {
+      showEditBillModal.value = false;
+      selectedBill.value = null;
+    };
+
     onMounted(() => {
       fetchBills();
       fetchRoommates();
@@ -213,6 +249,8 @@ export default {
       roommateTotals,
       panelStates,
       isDarkMode,
+      showEditBillModal,
+      selectedBill,
       togglePanel,
       toggleDarkMode,
       handleBillAdded,
@@ -222,6 +260,10 @@ export default {
       handleRoommateAddedError,
       handleRoommateDeleted,
       refreshTotals,
+      handleBillClicked,
+      handleBillUpdated,
+      handleBillDeletedFromModal,
+      closeEditModal,
     };
   },
 };

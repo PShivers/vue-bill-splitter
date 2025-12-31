@@ -55,13 +55,13 @@
         No bills added yet. Click "Add Bill" to get started.
       </div>
       
-      <div v-for="bill in bills" :key="bill.id" class="bill-item">
+      <div v-for="bill in bills" :key="bill.id" class="bill-item" @click="$emit('bill-clicked', bill)">
         <div class="bill-info">
           <h4>{{ bill.name }}</h4>
           <p class="bill-amount">${{ bill.amount.toFixed(2) }}</p>
           <p v-if="bill.due_date" class="bill-due-date">Due: {{ formatDate(bill.due_date) }}</p>
         </div>
-        <button @click="deleteBill(bill.id)" class="btn btn-danger btn-sm">Delete</button>
+        <v-icon>mdi-chevron-right</v-icon>
       </div>
     </div>
   </div>
@@ -81,7 +81,7 @@ export default {
       required: true
     }
   },
-  emits: ['bill-added', 'bill-deleted'],
+  emits: ['bill-added', 'bill-deleted', 'bill-clicked'],
   setup(props, { emit }) {
     const showAddForm = ref(false)
     const newBill = reactive({
@@ -114,18 +114,6 @@ export default {
       }
     }
 
-    const deleteBill = async (billId) => {
-      if (confirm('Are you sure you want to delete this bill?')) {
-        try {
-          await axios.delete(`${API_URL}/bills/${billId}`)
-          emit('bill-deleted')
-        } catch (error) {
-          console.error('Error deleting bill:', error)
-          alert('Error deleting bill')
-        }
-      }
-    }
-
     const cancelAdd = () => {
       newBill.name = ''
       newBill.amount = ''
@@ -143,7 +131,6 @@ export default {
       showAddForm,
       newBill,
       addBill,
-      deleteBill,
       cancelAdd,
       formatDate
     }
@@ -274,13 +261,21 @@ export default {
 
 .bill-item {
   display: flex;
-  justify-content: between;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
   padding: 1rem;
   border: 1px solid #eee;
   border-radius: 6px;
   margin-bottom: 0.5rem;
   background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bill-item:hover {
+  background: #f0f0f0;
+  border-color: #3498db;
+  transform: translateX(4px);
 }
 
 .bill-info {
