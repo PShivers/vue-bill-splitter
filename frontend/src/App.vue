@@ -33,17 +33,13 @@
 
         <div
           class="collapsible-panel center-panel"
-          :class="{ collapsed: !panelStates.assignments }"
+          :class="{ collapsed: !panelStates.calendar }"
         >
-          <div class="panel-header-bar" @click="togglePanel('assignments')">
-            <h2 :class="{ rotated: !panelStates.assignments }">Assignments</h2>
+          <div class="panel-header-bar" @click="togglePanel('calendar')">
+            <h2 :class="{ rotated: !panelStates.calendar }">Calendar</h2>
           </div>
-          <div v-show="panelStates.assignments" class="panel-content">
-            <AssignmentPanel
-              :bills="bills"
-              :roommates="roommates"
-              @assignment-changed="refreshTotals"
-            />
+          <div v-show="panelStates.calendar" class="panel-content">
+            <CalendarPanel :bills="bills" />
           </div>
         </div>
 
@@ -75,7 +71,7 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import BillPanel from "./components/BillPanel.vue";
 import RoommatePanel from "./components/RoommatePanel.vue";
-import AssignmentPanel from "./components/AssignmentPanel.vue";
+import CalendarPanel from "./components/CalendarPanel.vue";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -84,7 +80,7 @@ export default {
   components: {
     BillPanel,
     RoommatePanel,
-    AssignmentPanel,
+    CalendarPanel,
   },
   setup() {
     const bills = ref([]);
@@ -92,7 +88,7 @@ export default {
     const roommateTotals = ref([]);
     const panelStates = ref({
       bills: true,
-      assignments: true,
+      calendar: true,
       roommates: true,
     });
 
