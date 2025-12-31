@@ -6,10 +6,9 @@
     
     <main class="main">
       <div class="panels">
-        <div class="collapsible-panel left-panel">
+        <div class="collapsible-panel left-panel" :class="{ collapsed: !panelStates.bills }">
           <div class="panel-header-bar" @click="togglePanel('bills')">
-            <h2>Bills</h2>
-            <button class="collapse-btn">{{ panelStates.bills ? '−' : '+' }}</button>
+            <h2 :class="{ rotated: !panelStates.bills }">Bills</h2>
           </div>
           <div v-show="panelStates.bills" class="panel-content">
             <BillPanel
@@ -20,10 +19,9 @@
           </div>
         </div>
 
-        <div class="collapsible-panel center-panel">
+        <div class="collapsible-panel center-panel" :class="{ collapsed: !panelStates.assignments }">
           <div class="panel-header-bar" @click="togglePanel('assignments')">
-            <h2>Assignments</h2>
-            <button class="collapse-btn">{{ panelStates.assignments ? '−' : '+' }}</button>
+            <h2 :class="{ rotated: !panelStates.assignments }">Assignments</h2>
           </div>
           <div v-show="panelStates.assignments" class="panel-content">
             <AssignmentPanel
@@ -34,10 +32,9 @@
           </div>
         </div>
 
-        <div class="collapsible-panel right-panel">
+        <div class="collapsible-panel right-panel" :class="{ collapsed: !panelStates.roommates }">
           <div class="panel-header-bar" @click="togglePanel('roommates')">
-            <h2>Roommates</h2>
-            <button class="collapse-btn">{{ panelStates.roommates ? '−' : '+' }}</button>
+            <h2 :class="{ rotated: !panelStates.roommates }">Roommates</h2>
           </div>
           <div v-show="panelStates.roommates" class="panel-content">
             <RoommatePanel
@@ -224,8 +221,7 @@ export default {
 }
 
 .panels {
-  display: grid;
-  grid-template-columns: 25% 50% 25%;
+  display: flex;
   gap: 1rem;
   height: calc(100vh - 120px);
 }
@@ -237,17 +233,34 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.collapsible-panel.left-panel,
+.collapsible-panel.right-panel {
+  flex: 0 0 25%;
+}
+
+.collapsible-panel.center-panel {
+  flex: 0 0 50%;
+}
+
+.collapsible-panel.collapsed {
+  flex: 0 0 50px !important;
+  min-width: 50px;
 }
 
 .panel-header-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 1rem;
   background: #f8f9fa;
   border-bottom: 2px solid #e9ecef;
   cursor: pointer;
   user-select: none;
+  min-height: 60px;
 }
 
 .panel-header-bar:hover {
@@ -258,25 +271,14 @@ export default {
   margin: 0;
   font-size: 1.5rem;
   color: #2c3e50;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
 }
 
-.collapse-btn {
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  width: 30px;
-  height: 30px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.collapse-btn:hover {
-  background: #2980b9;
+.panel-header-bar h2.rotated {
+  transform: rotate(90deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
 .panel-content {
@@ -287,11 +289,20 @@ export default {
 
 @media (max-width: 1024px) {
   .panels {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    flex-direction: column;
     height: auto;
   }
-  
+
+  .collapsible-panel.left-panel,
+  .collapsible-panel.right-panel,
+  .collapsible-panel.center-panel {
+    flex: 1 1 auto !important;
+  }
+
+  .collapsible-panel.collapsed {
+    flex: 0 0 60px !important;
+  }
+
   .center-panel {
     order: 3;
   }
