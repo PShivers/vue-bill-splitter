@@ -4,41 +4,51 @@
       <button @click="showAddForm = true" class="btn btn-primary">Add Bill</button>
     </div>
 
-    <!-- Add Bill Form -->
-    <div v-if="showAddForm" class="add-form">
-      <h3>Add New Bill</h3>
-      <div class="form-group">
-        <label>Bill Name:</label>
-        <input 
-          type="text" 
-          v-model="newBill.name" 
-          placeholder="Enter bill name"
-          maxlength="50"
-        />
-      </div>
-      <div class="form-group">
-        <label>Amount:</label>
-        <input 
-          type="number" 
-          v-model="newBill.amount" 
-          placeholder="0.00"
-          min="0.01"
-          step="0.01"
-        />
-      </div>
-      <div class="form-group">
-        <label>Due Date:</label>
-        <input 
-          type="date" 
-          v-model="newBill.due_date"
-        />
-      </div>
-      <div class="form-actions">
-        <button @click="addBill" class="btn btn-success">Add</button>
-        <button @click="cancelAdd" class="btn btn-secondary">Cancel</button>
+    <!-- Add Bill Modal -->
+    <div v-if="showAddForm" class="modal-overlay" @click="cancelAdd">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Add New Bill</h3>
+          <button @click="cancelAdd" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Bill Name:</label>
+            <input
+              type="text"
+              v-model="newBill.name"
+              placeholder="Enter bill name"
+              maxlength="50"
+              @keyup.enter="addBill"
+            />
+          </div>
+          <div class="form-group">
+            <label>Amount:</label>
+            <input
+              type="number"
+              v-model="newBill.amount"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              @keyup.enter="addBill"
+            />
+          </div>
+          <div class="form-group">
+            <label>Due Date:</label>
+            <input
+              type="date"
+              v-model="newBill.due_date"
+              @keyup.enter="addBill"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelAdd" class="btn btn-secondary">Cancel</button>
+          <button @click="addBill" class="btn btn-success">Add Bill</button>
+        </div>
       </div>
     </div>
-    
+
     <!-- Bills List -->
     <div class="bills-list">
       <div v-if="bills.length === 0" class="empty-state">
@@ -162,16 +172,73 @@ export default {
   color: #2c3e50;
 }
 
-.add-form {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.add-form h3 {
-  margin: 0 0 1rem 0;
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
   color: #2c3e50;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 2px solid #eee;
+  background: #f8f9fa;
 }
 
 .form-group {
@@ -191,11 +258,6 @@ export default {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.5rem;
 }
 
 .bills-list {
