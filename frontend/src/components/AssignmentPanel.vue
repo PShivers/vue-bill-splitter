@@ -1,9 +1,5 @@
 <template>
   <div class="assignment-panel">
-    <div class="panel-header">
-      <h2>Assign Bills</h2>
-    </div>
-    
     <div v-if="bills.length === 0 || roommates.length === 0" class="empty-state">
       <p v-if="bills.length === 0">Add some bills first</p>
       <p v-if="roommates.length === 0">Add some roommates first</p>

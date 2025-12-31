@@ -6,29 +6,50 @@
     
     <main class="main">
       <div class="panels">
-        <BillPanel 
-          class="left-panel" 
-          :bills="bills" 
-          @bill-added="handleBillAdded"
-          @bill-deleted="handleBillDeleted"
-        />
-        
-        <AssignmentPanel 
-          class="center-panel"
-          :bills="bills"
-          :roommates="roommates"
-          @assignment-changed="refreshTotals"
-        />
-        
-        <RoommatePanel
-          class="right-panel"
-          :roommates="roommates"
-          :totals="roommateTotals"
-          @roommate-added="handleRoommateAdded"
-          @roommate-added-success="handleRoommateAddedSuccess"
-          @roommate-added-error="handleRoommateAddedError"
-          @roommate-deleted="handleRoommateDeleted"
-        />
+        <div class="collapsible-panel left-panel">
+          <div class="panel-header-bar" @click="togglePanel('bills')">
+            <h2>Bills</h2>
+            <button class="collapse-btn">{{ panelStates.bills ? '−' : '+' }}</button>
+          </div>
+          <div v-show="panelStates.bills" class="panel-content">
+            <BillPanel
+              :bills="bills"
+              @bill-added="handleBillAdded"
+              @bill-deleted="handleBillDeleted"
+            />
+          </div>
+        </div>
+
+        <div class="collapsible-panel center-panel">
+          <div class="panel-header-bar" @click="togglePanel('assignments')">
+            <h2>Assignments</h2>
+            <button class="collapse-btn">{{ panelStates.assignments ? '−' : '+' }}</button>
+          </div>
+          <div v-show="panelStates.assignments" class="panel-content">
+            <AssignmentPanel
+              :bills="bills"
+              :roommates="roommates"
+              @assignment-changed="refreshTotals"
+            />
+          </div>
+        </div>
+
+        <div class="collapsible-panel right-panel">
+          <div class="panel-header-bar" @click="togglePanel('roommates')">
+            <h2>Roommates</h2>
+            <button class="collapse-btn">{{ panelStates.roommates ? '−' : '+' }}</button>
+          </div>
+          <div v-show="panelStates.roommates" class="panel-content">
+            <RoommatePanel
+              :roommates="roommates"
+              :totals="roommateTotals"
+              @roommate-added="handleRoommateAdded"
+              @roommate-added-success="handleRoommateAddedSuccess"
+              @roommate-added-error="handleRoommateAddedError"
+              @roommate-deleted="handleRoommateDeleted"
+            />
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -54,6 +75,15 @@ export default {
     const bills = ref([])
     const roommates = ref([])
     const roommateTotals = ref([])
+    const panelStates = ref({
+      bills: true,
+      assignments: true,
+      roommates: true
+    })
+
+    const togglePanel = (panelName) => {
+      panelStates.value[panelName] = !panelStates.value[panelName]
+    }
 
     const fetchBills = async () => {
       try {
@@ -154,6 +184,8 @@ export default {
       bills,
       roommates,
       roommateTotals,
+      panelStates,
+      togglePanel,
       handleBillAdded,
       handleBillDeleted,
       handleRoommateAdded,
@@ -193,19 +225,64 @@ export default {
 
 .panels {
   display: grid;
-  grid-template-columns: 1fr 300px 1fr;
+  grid-template-columns: 25% 50% 25%;
   gap: 1rem;
   height: calc(100vh - 120px);
 }
 
-.left-panel,
-.right-panel,
-.center-panel {
+.collapsible-panel {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  cursor: pointer;
+  user-select: none;
+}
+
+.panel-header-bar:hover {
+  background: #e9ecef;
+}
+
+.panel-header-bar h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+}
+
+.collapse-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.collapse-btn:hover {
+  background: #2980b9;
+}
+
+.panel-content {
+  flex: 1;
   overflow-y: auto;
+  padding: 1rem;
 }
 
 @media (max-width: 1024px) {

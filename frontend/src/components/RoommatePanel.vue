@@ -1,9 +1,5 @@
 <template>
   <div class="roommate-panel">
-    <div class="panel-header">
-      <h2>Roommates</h2>
-    </div>
-    
     <!-- Add Roommate Form -->
     <div class="add-form">
       <div class="form-group">

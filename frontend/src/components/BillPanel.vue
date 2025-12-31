@@ -1,10 +1,9 @@
 <template>
   <div class="bill-panel">
     <div class="panel-header">
-      <h2>Bills</h2>
       <button @click="showAddForm = true" class="btn btn-primary">Add Bill</button>
     </div>
-    
+
     <!-- Add Bill Form -->
     <div v-if="showAddForm" class="add-form">
       <h3>Add New Bill</h3>
