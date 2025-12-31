@@ -44,6 +44,9 @@ Thumbs.db
 *.temp
 .cache/
 
+# Vite
+.vite/
+
 # Coverage directory
 coverage/
 *.lcov
