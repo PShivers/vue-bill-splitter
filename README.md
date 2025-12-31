@@ -74,30 +74,37 @@ npm start
 ## API Endpoints
 
 ### Roommates
+
 - `GET /api/roommates` - Get all active roommates
-- `POST /api/roommates` - Add new roommate
+- `POST /api/roommates` - Add new roommate (body: `{ name, email }`)
 - `DELETE /api/roommates/:id` - Deactivate roommate
 
 ### Bills
+
 - `GET /api/bills` - Get all active bills
-- `POST /api/bills` - Add new bill
+- `POST /api/bills` - Add new bill (body: `{ name, amount, due_date }`)
+- `PUT /api/bills/:id` - Update bill (body: `{ name, amount, due_date }`)
 - `DELETE /api/bills/:id` - Deactivate bill
 
 ### Assignments
+
 - `GET /api/bills/:billId/assignments` - Get bill assignments
 - `POST /api/bills/:billId/assign/:roommateId` - Assign bill to roommate
 - `DELETE /api/bills/:billId/assign/:roommateId` - Remove assignment
 
 ### Totals
+
 - `GET /api/roommates/totals` - Get all roommate totals
 - `GET /api/roommates/:id/total` - Get specific roommate total
 
 ## Usage
 
-1. **Add Roommates**: Use the right panel to add roommates
-2. **Add Bills**: Use the left panel to create bills with amounts and due dates
-3. **Assign Bills**: Use the center panel to assign bills to roommates
-4. **View Totals**: See calculated totals for each roommate in the right panel
+1. **Add Roommates**: Click "Add Roommate" in the right panel to add roommates with names and optional email addresses
+2. **Add Bills**: Click "Add Bill" in the left panel to create bills with amounts, due dates, and assign to roommates
+3. **View Calendar**: The center panel shows a monthly calendar with bills displayed on their due dates
+4. **Edit Bills**: Click any bill (in list or calendar) to edit details, change assignments, or delete
+5. **View Totals**: See calculated totals for each roommate in the right panel (bills are split equally among assigned roommates)
+6. **Toggle Dark Mode**: Click the moon/sun icon in the header to switch themes
 
 ## Database Schema
 
