@@ -1,181 +1,106 @@
-# Vue Bill Splitter
+# RoomieSplit · Vue Bill Splitter
 
-A modern, feature-rich web application for splitting bills among roommates, built with Vue.js 3, Vuetify, and Node.js/Express backend with SQLite database.
+A modern, full-featured web application for tracking household expenses and splitting bills among roommates, built with Vue.js 3, Vuetify icons, and a Node.js/Express SQLite backend.
 
 ## Features
 
 ### Core Functionality
 
-- **Roommate Management**: Add and manage roommates with email addresses
-- **Bill Management**: Create and edit bills with names, amounts, and due dates
-- **Bill Assignment**: Assign bills to multiple roommates with checkbox selection
-- **Automatic Calculations**: Real-time calculation of how much each roommate owes
-- **Calendar View**: Visual calendar displaying bills on their due dates
+- **Roommate Management**: Add and manage roommates with names and emails
+- **Bill Management**: Create and edit bills with names, amounts, due dates, categories, and notes
+- **Atomic Bill Assignment**: Assign bills to multiple roommates with atomic batch persistence
+- **Share Settlement**: Mark individual roommate shares as Paid or Unpaid, updating balances in real time
+- **Roommate Itemized Ledger**: Click any roommate to view all their assigned bills, share breakdowns, and settle shares with one tap
+- **Visual Monthly Calendar**: Interactive calendar displaying bills on their exact local due dates with monthly summary totals and click-to-add
+- **KPI Metrics Dashboard**: Live header indicators tracking total bills, total amount, outstanding balance, and bills due soon
 
-### User Interface
+### User Interface & Experience
 
-- **Dark Mode**: Toggle between light and dark themes (persists in localStorage)
-- **Collapsible Panels**: Three-panel layout (Bills, Calendar, Roommates) with expand/collapse functionality
-- **Modal Dialogs**: Clean modal interfaces for adding/editing bills and roommates
-- **Click-to-Edit**: Click any bill to open edit modal with inline roommate assignment
-- **Material Design Icons**: Using MDI icons throughout the interface
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Smooth Animations**: Polished transitions and hover effects
-
-### Advanced Features
-
-- **Optimistic UI Updates**: Instant feedback when adding roommates
-- **Soft Deletes**: Bills and roommates are deactivated, not permanently deleted
-- **Bill Splitting**: Automatic equal split calculation among assigned roommates
-- **Visual Calendar**: Month navigation with bills displayed on due dates
+- **Curated Category System**: Rent, Utilities, Electricity, Water, Internet, Groceries, Entertainment, and Other with custom badges and icons
+- **Search & Filters**: Search bills by keyword and filter by status (All, Pending, Settled) or category
+- **Toast Notifications**: Non-blocking toast alerts for instant feedback on all user actions
+- **Dark Mode**: High-contrast, sleek dark mode toggle persisting across sessions in `localStorage`
+- **Collapsible Panels**: Three-panel desktop layout (Bills, Calendar, Roommates) optimized for both desktop and mobile
+- **Polished Typography**: Modern typography using Google Fonts (Inter & Outfit)
 
 ## Project Structure
 
 ```
 vue-bill-splitter/
-├── backend/                 # Node.js/Express API server
-│   ├── server.js           # Main server file
-│   ├── database.js         # SQLite database setup
-│   └── package.json        # Backend dependencies
-├── frontend/               # Vue.js application
+├── backend/
+│   ├── database.js          # SQLite database with WAL mode and auto-migrations
+│   ├── server.js            # Express API server with batch assignment and settlement
+│   ├── package.json         # Backend dependencies & test scripts
+│   └── tests/
+│       └── api.test.js      # Automated unit and integration test suite
+├── frontend/
 │   ├── src/
-│   │   ├── components/     # Vue components
-│   │   ├── App.vue         # Main app component
-│   │   └── main.js         # App entry point
-│   ├── index.html          # HTML template
-│   ├── vite.config.js      # Vite configuration
-│   └── package.json        # Frontend dependencies
-└── package.json            # Root package.json with scripts
+│   │   ├── components/
+│   │   │   ├── BillPanel.vue           # Bills list, search, filters & add modal
+│   │   │   ├── CalendarPanel.vue       # Month calendar with click-to-add
+│   │   │   ├── RoommatePanel.vue       # Roommates list, totals & delete confirm
+│   │   │   ├── RoommateDetailModal.vue # Itemized bills ledger & share settlement
+│   │   │   ├── EditBillModal.vue       # Bill editing & whole-bill settle toggle
+│   │   │   └── ToastNotification.vue   # Reusable feedback toast stack
+│   │   ├── App.vue          # Main layout, header KPI chips, and state manager
+│   │   └── main.js          # Vue app bootstrap & Vuetify icons
+│   ├── index.html           # HTML template with modern typography
+│   ├── vite.config.js       # Vite configuration
+│   └── package.json         # Frontend dependencies
+└── package.json             # Root npm scripts
 ```
 
-## Installation
+## Getting Started
 
-1. Clone or download the project
-2. Install dependencies:
+### Installation
 
-   ```bash
-   cd vue-bill-splitter
-   npm run install:all
-   ```
+```bash
+npm run install:all
+```
 
-## Running the Application
-
-### Development Mode
+### Running Locally (Development)
 
 ```bash
 npm run dev
 ```
 
-This starts both backend (port 3001) and frontend (port 3000) concurrently.
+Starts the Express backend on `http://localhost:3001` and Vite frontend on `http://localhost:3000`.
 
-### Production Mode
+### Running Tests
 
 ```bash
-# Build frontend
-npm run build
+npm --prefix backend test
+```
 
-# Start backend only
+### Production Build
+
+```bash
+npm run build
 npm start
 ```
 
 ## API Endpoints
 
 ### Roommates
-
 - `GET /api/roommates` - Get all active roommates
-- `POST /api/roommates` - Add new roommate (body: `{ name, email }`)
+- `POST /api/roommates` - Add roommate (`{ name, email }`)
 - `DELETE /api/roommates/:id` - Deactivate roommate
+- `GET /api/roommates/:id/breakdown` - Get itemized bill ledger for a roommate
+- `GET /api/roommates/totals` - Get totals owed and settled for all roommates
+- `GET /api/roommates/:id/total` - Get specific roommate totals
 
 ### Bills
-
-- `GET /api/bills` - Get all active bills
-- `POST /api/bills` - Add new bill (body: `{ name, amount, due_date }`)
-- `PUT /api/bills/:id` - Update bill (body: `{ name, amount, due_date }`)
+- `GET /api/bills` - Get all active bills with assigned roommates
+- `POST /api/bills` - Create bill with atomic assignments (`{ name, amount, due_date, category, notes, roommate_ids }`)
+- `PUT /api/bills/:id` - Update bill and synchronise assignments
 - `DELETE /api/bills/:id` - Deactivate bill
+- `POST /api/bills/:id/toggle-settled` - Mark entire bill settled/unsettled
 
-### Assignments
-
+### Assignments & Share Settlement
 - `GET /api/bills/:billId/assignments` - Get bill assignments
-- `POST /api/bills/:billId/assign/:roommateId` - Assign bill to roommate
+- `POST /api/bills/:billId/assign/:roommateId` - Assign roommate to bill
 - `DELETE /api/bills/:billId/assign/:roommateId` - Remove assignment
+- `POST /api/bills/:billId/assignments/:roommateId/toggle-paid` - Toggle individual share payment
 
-### Totals
-
-- `GET /api/roommates/totals` - Get all roommate totals
-- `GET /api/roommates/:id/total` - Get specific roommate total
-
-## Usage
-
-1. **Add Roommates**: Click "Add Roommate" in the right panel to add roommates with names and optional email addresses
-2. **Add Bills**: Click "Add Bill" in the left panel to create bills with amounts, due dates, and assign to roommates
-3. **View Calendar**: The center panel shows a monthly calendar with bills displayed on their due dates
-4. **Edit Bills**: Click any bill (in list or calendar) to edit details, change assignments, or delete
-5. **View Totals**: See calculated totals for each roommate in the right panel (bills are split equally among assigned roommates)
-6. **Toggle Dark Mode**: Click the moon/sun icon in the header to switch themes
-
-## Database Schema
-
-### Roommates Table
-
-- `id` - Primary key
-- `name` - Roommate name
-- `email` - Email address (optional)
-- `is_active` - Soft delete flag (1 = active, 0 = deleted)
-- `created_at` - Creation timestamp
-
-### Bills Table
-
-- `id` - Primary key
-- `name` - Bill name
-- `amount` - Bill amount (decimal)
-- `due_date` - Due date (optional, YYYY-MM-DD format)
-- `is_active` - Soft delete flag (1 = active, 0 = deleted)
-- `created_at` - Creation timestamp
-
-### Bill Assignments Table
-
-- `id` - Primary key
-- `bill_id` - Foreign key to bills
-- `roommate_id` - Foreign key to roommates
-- `created_at` - Creation timestamp
-
-## Technology Stack
-
-- **Frontend**: Vue.js 3, Vuetify 3.11.6, Vite, Axios
-- **Backend**: Node.js, Express.js
-- **Database**: SQLite3
-- **Icons**: Material Design Icons (@mdi/font)
-- **Styling**: Scoped CSS with dark mode support
-
-## Components
-
-### Frontend Components
-
-- **App.vue** - Main application with three-panel layout and dark mode
-- **BillPanel.vue** - Bill list and add bill modal with roommate assignment
-- **CalendarPanel.vue** - Monthly calendar view with bill display
-- **RoommatePanel.vue** - Roommate management with totals display
-- **EditBillModal.vue** - Modal for editing bills and managing assignments
-
-### Backend Structure
-
-- **server.js** - Express server with REST API endpoints
-- **database.js** - SQLite database initialization and schema
-
-## Key Features Explained
-
-### Bill Splitting Logic
-
-Bills are split equally among all assigned roommates. For example:
-
-- Bill amount: $120
-- Assigned to: Alice, Bob, Charlie
-- Each owes: $40 ($120 ÷ 3)
-
-### Soft Deletes
-
-Bills and roommates are never permanently deleted from the database. Instead, they're marked as inactive (`is_active = 0`) to maintain data integrity and calculation history.
-
-### Dark Mode
-
-Theme preference is stored in `localStorage` and persists across sessions. All components support both light and dark themes with appropriate color schemes.
+### Dashboard Stats
+- `GET /api/stats` - Get summary KPI metrics (total bills, total amount, outstanding, settled, due soon)
